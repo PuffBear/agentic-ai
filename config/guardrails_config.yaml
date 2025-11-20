@@ -1,0 +1,225 @@
+# Guardrails Configuration
+# Multi-layered defense against hallucinations, risks, and invalid outputs
+
+layer1_input_validation:
+  name: "Input Validation Layer"
+  description: "First line of defense - validates all incoming data"
+  enabled: true
+  checks:
+    schema_validation:
+      enabled: true
+      strict_mode: true
+      required_fields:
+        - "Age"
+        - "Gender"
+        - "Location"
+        - "GameGenre"
+        - "PlayTimeHours"
+        - "InGamePurchases"
+        - "GameDifficulty"
+        - "SessionsPerWeek"
+        - "AvgSessionDurationMinutes"
+        - "PlayerLevel"
+        - "AchievementsUnlocked"
+      
+    range_validation:
+      enabled: true
+      rules:
+        Age:
+          min: 0
+          max: 100
+          type: "int"
+        PlayTimeHours:
+          min: 0
+          max: 10000
+          type: "float"
+        SessionsPerWeek:
+          min: 0
+          max: 50
+          type: "int"
+        AvgSessionDurationMinutes:
+          min: 0
+          max: 600
+          type: "float"
+        PlayerLevel:
+          min: 1
+          max: 100
+          type: "int"
+        AchievementsUnlocked:
+          min: 0
+          max: 1000
+          type: "int"
+    
+    categorical_validation:
+      enabled: true
+      allowed_values:
+        Gender:
+          - "Male"
+          - "Female"
+        GameDifficulty:
+          - "Easy"
+          - "Medium"
+          - "Hard"
+        InGamePurchases:
+          - "Yes"
+          - "No"
+    
+    adversarial_detection:
+      enabled: true
+      methods:
+        - "statistical_outlier"
+        - "impossible_combinations"
+      outlier_threshold: 3.0  # standard deviations
+    
+  actions:
+    on_failure: "reject"  # reject, sanitize, or flag
+    logging: true
+    alert_threshold: 0.1  # alert if >10% inputs fail
+
+layer2_prediction_validation:
+  name: "Prediction Validation Layer"
+  description: "Validates model predictions for consistency and quality"
+  enabled: true
+  checks:
+    confidence_threshold:
+      enabled: true
+      min_confidence: 0.6
+      action_on_low_confidence: "flag_for_review"
+    
+    cross_model_consistency:
+      enabled: true
+      description: "Hallucination detection via model agreement"
+      min_agreement: 0.7  # at least 70% of models must agree
+      models_required: 3
+      disagreement_action: "flag_hallucination"
+    
+    prediction_distribution:
+      enabled: true
+      check_for_drift: true
+      reference_distribution: "training"
+      drift_threshold: 0.05
+    
+    uncertainty_quantification:
+      enabled: true
+      method: "monte_carlo_dropout"  # or "ensemble_variance"
+      high_uncertainty_threshold: 0.3
+      action: "request_human_review"
+    
+    output_range_validation:
+      enabled: true
+      expected_classes:
+        - "High"
+        - "Medium"
+        - "Low"
+      probability_sum_check: true  # probabilities should sum to 1
+      probability_range: [0, 1]
+  
+  actions:
+    on_low_confidence: "flag"
+    on_hallucination: "reject"
+    on_drift: "trigger_monitoring"
+    logging: true
+
+layer3_action_validation:
+  name: "Action Validation Layer"
+  description: "Final safety check before action execution"
+  enabled: true
+  checks:
+    rule_based_constraints:
+      enabled: true
+      rules:
+        # Don't offer discounts to high-engagement players
+        - name: "no_discount_for_high_engagement"
+          condition: "engagement == 'High' and action.startswith('discount')"
+          action: "reject"
+        
+        # Limit costly actions per day
+        - name: "cost_limit"
+          condition: "daily_action_cost > 1000"
+          action: "flag_for_approval"
+        
+        # Ensure actions match predicted segment
+        - name: "segment_alignment"
+          condition: "action.target_segment != predicted_segment"
+          action: "warn"
+    
+    risk_assessment:
+      enabled: true
+      high_risk_actions:
+        - "discount_20"
+      require_human_approval: true
+      approval_timeout: 3600  # 1 hour
+    
+    action_frequency_limits:
+      enabled: true
+      limits:
+        discount_10:
+          per_user_per_month: 2
+        discount_20:
+          per_user_per_month: 1
+        notification:
+          per_user_per_day: 3
+    
+    output_sanitization:
+      enabled: true
+      remove_sensitive_data: true
+      mask_pii: true
+    
+  actions:
+    on_rule_violation: "reject"
+    on_high_risk: "require_approval"
+    on_frequency_exceeded: "reject"
+    logging: true
+    alert_admin: true
+
+# Cross-Layer Configuration
+cross_layer:
+  hallucination_detection:
+    enabled: true
+    methods:
+      - layer: 2
+        method: "cross_model_consistency"
+      - layer: 2
+        method: "uncertainty_quantification"
+    aggregate_score: true
+    threshold: 0.8
+  
+  monitoring:
+    enabled: true
+    metrics:
+      - "layer1_rejection_rate"
+      - "layer2_hallucination_rate"
+      - "layer3_action_blocks"
+      - "end_to_end_success_rate"
+    log_frequency: 100  # every 100 samples
+    alert_on_spike: true
+    spike_threshold: 2.0  # 2x normal rate
+  
+  audit_trail:
+    enabled: true
+    store_all_decisions: true
+    retention_days: 90
+    include_failed_validations: true
+
+# Evaluation Metrics
+evaluation:
+  metrics:
+    false_positive_rate:
+      description: "Legitimate inputs incorrectly flagged"
+      target: "<5%"
+    
+    false_negative_rate:
+      description: "Threats that passed through"
+      target: "<1%"
+    
+    layer_effectiveness:
+      description: "Threats caught per layer"
+      track_per_layer: true
+    
+    latency:
+      description: "Time added by guardrails"
+      target: "<100ms"
+    
+    hallucination_detection_accuracy:
+      description: "Correctly identified hallucinations"
+      target: ">90%"
