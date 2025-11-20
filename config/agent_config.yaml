@@ -1,0 +1,123 @@
+# Agent Configuration
+# Defines behavior and parameters for each of the 5 agents
+
+agents:
+  data_agent:
+    name: "Data Ingestion Agent"
+    description: "Handles data loading, preprocessing, and quality checks"
+    enabled: true
+    config:
+      batch_size: 1000
+      validation_rules:
+        age_range: [0, 100]
+        playtime_min: 0
+        sessions_per_week_range: [0, 50]
+      feature_engineering:
+        - "interaction_features"
+        - "temporal_features"
+        - "behavioral_scores"
+      anomaly_detection:
+        method: "isolation_forest"
+        contamination: 0.05
+
+  prediction_agent:
+    name: "Multi-Model Prediction Agent"
+    description: "Ensemble predictions with uncertainty quantification"
+    enabled: true
+    config:
+      models:
+        - "random_forest"
+        - "xgboost"
+        - "neural_network"
+      ensemble_method: "voting"  # voting or stacking
+      confidence_threshold: 0.7
+      uncertainty_quantification: true
+      cross_validation:
+        method: "stratified_kfold"
+        n_splits: 5
+
+  prescriptive_agent:
+    name: "Prescriptive Strategy Agent"
+    description: "Recommends optimal actions based on predictions"
+    enabled: true
+    config:
+      actions:
+        - id: "discount_10"
+          name: "10% Discount Offer"
+          cost: 5
+          target_segments: ["low", "medium"]
+        - id: "discount_20"
+          name: "20% Discount Offer"
+          cost: 10
+          target_segments: ["low"]
+        - id: "notification"
+          name: "Engagement Notification"
+          cost: 0.5
+          target_segments: ["low", "medium"]
+        - id: "content_recommend"
+          name: "Content Recommendation"
+          cost: 1
+          target_segments: ["medium", "high"]
+        - id: "no_action"
+          name: "No Action"
+          cost: 0
+          target_segments: ["high"]
+      strategy: "contextual_bandit"  # or "rule_based"
+      exploration_rate: 0.1
+
+  execution_agent:
+    name: "Execution & Simulation Agent"
+    description: "Simulates actions and tracks outcomes"
+    enabled: true
+    config:
+      simulation_mode: true
+      reward_calculation:
+        engagement_increase: 2
+        engagement_maintain: 1
+        engagement_decrease: -2
+        low_maintain: -1
+      logging:
+        enabled: true
+        log_level: "INFO"
+        track_metrics:
+          - "action_distribution"
+          - "reward_per_action"
+          - "success_rate"
+
+  monitoring_agent:
+    name: "Monitoring & Adaptive Learning Agent"
+    description: "Detects drift and updates policies"
+    enabled: true
+    config:
+      drift_detection:
+        methods:
+          - "kolmogorov_smirnov"
+          - "population_stability_index"
+        threshold: 0.05
+        check_frequency: 100  # samples
+      retraining:
+        trigger_on_drift: true
+        min_samples: 500
+        auto_deploy: false  # require manual approval
+      rl_update:
+        algorithm: "thompson_sampling"  # or "ucb"
+        update_frequency: 50
+        learning_rate: 0.01
+
+# LangChain Orchestration
+orchestration:
+  framework: "langchain"
+  llm_provider: "groq"  # free option
+  model_name: "llama-3.2-3b-preview"
+  max_iterations: 10
+  timeout: 300  # seconds
+  logging:
+    enabled: true
+    level: "DEBUG"
+
+# Communication Protocol
+communication:
+  format: "json"
+  validation: true
+  retry_attempts: 3
+  timeout_per_agent: 30
