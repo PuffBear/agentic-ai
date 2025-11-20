@@ -1,0 +1,252 @@
+# Model Configuration
+# Hyperparameters and settings for all ML models
+
+# Data Preprocessing
+preprocessing:
+  test_size: 0.2
+  validation_size: 0.1
+  random_state: 42
+  stratify: true
+  
+  scaling:
+    method: "standard"  # standard, minmax, robust
+    features:
+      - "Age"
+      - "PlayTimeHours"
+      - "SessionsPerWeek"
+      - "AvgSessionDurationMinutes"
+      - "PlayerLevel"
+      - "AchievementsUnlocked"
+  
+  encoding:
+    categorical_features:
+      - "Gender"
+      - "Location"
+      - "GameGenre"
+      - "GameDifficulty"
+      - "InGamePurchases"
+    method: "onehot"  # onehot or label
+  
+  class_imbalance:
+    handle: true
+    method: "smote"  # smote, adasyn, random_oversample
+    sampling_strategy: "auto"
+
+# Baseline Models
+models:
+  random_forest:
+    type: "ensemble"
+    class: "RandomForestClassifier"
+    hyperparameters:
+      n_estimators: 200
+      max_depth: 20
+      min_samples_split: 5
+      min_samples_leaf: 2
+      max_features: "sqrt"
+      bootstrap: true
+      random_state: 42
+      n_jobs: -1
+    
+    tuning:
+      enabled: true
+      method: "grid_search"  # grid_search or random_search
+      cv: 5
+      param_grid:
+        n_estimators: [100, 200, 300]
+        max_depth: [15, 20, 25]
+        min_samples_split: [2, 5, 10]
+  
+  xgboost:
+    type: "boosting"
+    class: "XGBClassifier"
+    hyperparameters:
+      n_estimators: 200
+      max_depth: 8
+      learning_rate: 0.1
+      subsample: 0.8
+      colsample_bytree: 0.8
+      gamma: 0
+      min_child_weight: 1
+      reg_alpha: 0
+      reg_lambda: 1
+      random_state: 42
+      n_jobs: -1
+    
+    tuning:
+      enabled: true
+      method: "random_search"
+      cv: 5
+      n_iter: 50
+      param_distributions:
+        n_estimators: [100, 200, 300]
+        max_depth: [6, 8, 10]
+        learning_rate: [0.01, 0.05, 0.1]
+        subsample: [0.7, 0.8, 0.9]
+  
+  neural_network:
+    type: "deep_learning"
+    class: "MLPClassifier"
+    hyperparameters:
+      hidden_layer_sizes: [128, 64, 32]
+      activation: "relu"
+      solver: "adam"
+      alpha: 0.0001
+      batch_size: 32
+      learning_rate: "adaptive"
+      learning_rate_init: 0.001
+      max_iter: 500
+      early_stopping: true
+      validation_fraction: 0.1
+      random_state: 42
+    
+    tuning:
+      enabled: true
+      method: "random_search"
+      cv: 3
+      n_iter: 30
+      param_distributions:
+        hidden_layer_sizes: [[128, 64], [128, 64, 32], [256, 128, 64]]
+        alpha: [0.0001, 0.001, 0.01]
+        learning_rate_init: [0.0001, 0.001, 0.01]
+
+# Ensemble Configuration
+ensemble:
+  method: "voting"  # voting or stacking
+  
+  voting:
+    voting_type: "soft"  # hard or soft
+    weights: [1, 1, 1]  # equal weights for RF, XGB, NN
+  
+  stacking:
+    final_estimator: "logistic_regression"
+    cv: 5
+    stack_method: "predict_proba"
+
+# Model Evaluation
+evaluation:
+  metrics:
+    - "accuracy"
+    - "precision_macro"
+    - "recall_macro"
+    - "f1_macro"
+    - "roc_auc_ovr"
+  
+  cross_validation:
+    enabled: true
+    cv: 5
+    stratified: true
+  
+  confusion_matrix:
+    enabled: true
+    normalize: "true"
+  
+  feature_importance:
+    enabled: true
+    methods:
+      - "built_in"
+      - "permutation"
+
+# Drift Detection
+drift_detection:
+  enabled: true
+  
+  methods:
+    kolmogorov_smirnov:
+      enabled: true
+      threshold: 0.05
+      features: "all"
+    
+    population_stability_index:
+      enabled: true
+      threshold: 0.2
+      buckets: 10
+    
+    data_drift:
+      enabled: true
+      method: "evidently"
+      drift_share_threshold: 0.5
+  
+  monitoring_frequency: 100  # check every 100 predictions
+  
+  actions:
+    on_drift_detected:
+      - "log_alert"
+      - "trigger_retraining"
+      - "notify_admin"
+
+# Reinforcement Learning - Contextual Bandit
+contextual_bandit:
+  algorithm: "thompson_sampling"  # thompson_sampling, ucb, epsilon_greedy
+  
+  thompson_sampling:
+    prior:
+      alpha: 1.0
+      beta: 1.0
+    update_rule: "beta_bernoulli"
+  
+  ucb:
+    confidence_level: 0.95
+    exploration_constant: 2.0
+  
+  epsilon_greedy:
+    epsilon: 0.1
+    decay_rate: 0.995
+    min_epsilon: 0.01
+  
+  context_features:
+    - "Age"
+    - "PlayTimeHours"
+    - "SessionsPerWeek"
+    - "PlayerLevel"
+    - "InGamePurchases_encoded"
+    - "engagement_prediction"
+  
+  actions:
+    - id: 0
+      name: "discount_10"
+    - id: 1
+      name: "discount_20"
+    - id: 2
+      name: "notification"
+    - id: 3
+      name: "content_recommend"
+    - id: 4
+      name: "no_action"
+  
+  reward_function:
+    type: "engagement_change"
+    high_to_high: 1
+    medium_to_high: 2
+    low_to_medium: 2
+    low_to_high: 3
+    maintain_medium: 1
+    maintain_low: -1
+    any_decrease: -2
+  
+  training:
+    initial_random_samples: 100
+    update_frequency: 10
+    evaluation_frequency: 50
+    
+  exploration:
+    strategy: "adaptive"  # fixed or adaptive
+    initial_rate: 0.3
+    final_rate: 0.05
+    decay_steps: 1000
+
+# Model Persistence
+persistence:
+  save_best_model: true
+  save_all_models: false
+  model_format: "joblib"  # joblib or pickle
+  save_path: "models/saved/"
+  versioning: true
+  
+  mlflow:
+    enabled: true
+    tracking_uri: "file:./experiments/mlruns"
+    experiment_name: "gaming_behavior_prediction"
+    log_params: true
+    log_metrics: true
+    log_artifacts: true
+    log_models: true
