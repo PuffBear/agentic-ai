@@ -1,0 +1,123 @@
+2025-11-21 04:42:38 | INFO     | src.utils.logger:setup_logger:54 - Logger initialized with level INFO
+2025-11-21 04:42:39 | INFO     | src.utils.data_loader:__init__:30 - DataLoader initialized with path: data/raw/online_gaming_behavior_dataset.csv
+2025-11-21 04:42:39 | INFO     | src.utils.data_loader:load_data:46 - Loading data from data/raw/online_gaming_behavior_dataset.csv
+2025-11-21 04:42:39 | INFO     | src.utils.data_loader:load_data:49 - Data loaded successfully. Shape: (40034, 13)
+2025-11-21 04:42:39 | INFO     | src.utils.data_loader:load_data:50 - Columns: ['PlayerID', 'Age', 'Gender', 'Location', 'GameGenre', 'PlayTimeHours', 'InGamePurchases', 'GameDifficulty', 'SessionsPerWeek', 'AvgSessionDurationMinutes', 'PlayerLevel', 'AchievementsUnlocked', 'EngagementLevel']
+2025-11-21 04:42:39 | INFO     | src.utils.data_loader:load_data:51 - Target distribution:
+EngagementLevel
+Medium    19374
+High      10336
+Low       10324
+Name: count, dtype: int64
+2025-11-21 04:42:39 | INFO     | src.utils.data_loader:split_data:130 - Data split complete:
+2025-11-21 04:42:39 | INFO     | src.utils.data_loader:split_data:131 -   Train: 28023 samples
+2025-11-21 04:42:39 | INFO     | src.utils.data_loader:split_data:132 -   Val: 4004 samples
+2025-11-21 04:42:39 | INFO     | src.utils.data_loader:split_data:133 -   Test: 8007 samples
+2025-11-21 04:42:39 | INFO     | src.utils.data_loader:split_data:134 -   Train target distribution: {'Medium': 13561, 'High': 7235, 'Low': 7227}
+2025-11-21 04:42:39 | INFO     | src.utils.data_loader:split_data:135 -   Val target distribution: {'Medium': 1938, 'High': 1034, 'Low': 1032}
+2025-11-21 04:42:39 | INFO     | src.utils.data_loader:split_data:136 -   Test target distribution: {'Medium': 3875, 'High': 2067, 'Low': 2065}
+2025-11-21 04:42:39 | INFO     | src.agents.base_agent:__init__:44 - prediction_agent initialized (enabled=True)
+2025-11-21 04:42:39 | INFO     | src.utils.feature_engineering:__init__:21 - FeatureEngineer initialized
+2025-11-21 04:42:39 | INFO     | src.utils.metrics:__init__:21 - MetricsCalculator initialized
+2025-11-21 04:42:39 | INFO     | src.agents.prediction_agent:__init__:40 - PredictionAgent initialized with 3 models
+2025-11-21 04:42:39 | INFO     | src.agents.base_agent:execute:129 - prediction_agent execution started
+2025-11-21 04:42:39 | INFO     | src.agents.prediction_agent:train_models:110 - Training models on 28023 samples...
+2025-11-21 04:42:39 | INFO     | src.agents.prediction_agent:_initialize_models:76 - Initializing models...
+2025-11-21 04:42:39 | INFO     | src.agents.prediction_agent:_initialize_models:106 - ✓ All models initialized
+2025-11-21 04:42:39 | INFO     | src.agents.prediction_agent:train_models:117 - Training Random Forest...
+2025-11-21 04:42:40 | INFO     | src.agents.prediction_agent:train_models:121 - Training XGBoost...
+2025-11-21 04:42:40 | ERROR    | src.agents.base_agent:execute:169 - prediction_agent execution failed: Invalid classes inferred from unique values of `y`.  Expected: [0 1 2], got ['High' 'Low' 'Medium']
+2025-11-21 04:44:43 | INFO     | src.utils.logger:setup_logger:54 - Logger initialized with level INFO
+2025-11-21 04:44:43 | INFO     | src.utils.data_loader:__init__:30 - DataLoader initialized with path: data/raw/online_gaming_behavior_dataset.csv
+2025-11-21 04:44:43 | INFO     | src.utils.data_loader:load_data:46 - Loading data from data/raw/online_gaming_behavior_dataset.csv
+2025-11-21 04:44:43 | INFO     | src.utils.data_loader:load_data:49 - Data loaded successfully. Shape: (40034, 13)
+2025-11-21 04:44:43 | INFO     | src.utils.data_loader:load_data:50 - Columns: ['PlayerID', 'Age', 'Gender', 'Location', 'GameGenre', 'PlayTimeHours', 'InGamePurchases', 'GameDifficulty', 'SessionsPerWeek', 'AvgSessionDurationMinutes', 'PlayerLevel', 'AchievementsUnlocked', 'EngagementLevel']
+2025-11-21 04:44:43 | INFO     | src.utils.data_loader:load_data:51 - Target distribution:
+EngagementLevel
+Medium    19374
+High      10336
+Low       10324
+Name: count, dtype: int64
+2025-11-21 04:44:43 | INFO     | src.utils.data_loader:split_data:130 - Data split complete:
+2025-11-21 04:44:43 | INFO     | src.utils.data_loader:split_data:131 -   Train: 28023 samples
+2025-11-21 04:44:43 | INFO     | src.utils.data_loader:split_data:132 -   Val: 4004 samples
+2025-11-21 04:44:43 | INFO     | src.utils.data_loader:split_data:133 -   Test: 8007 samples
+2025-11-21 04:44:43 | INFO     | src.utils.data_loader:split_data:134 -   Train target distribution: {'Medium': 13561, 'High': 7235, 'Low': 7227}
+2025-11-21 04:44:43 | INFO     | src.utils.data_loader:split_data:135 -   Val target distribution: {'Medium': 1938, 'High': 1034, 'Low': 1032}
+2025-11-21 04:44:43 | INFO     | src.utils.data_loader:split_data:136 -   Test target distribution: {'Medium': 3875, 'High': 2067, 'Low': 2065}
+2025-11-21 04:44:43 | INFO     | src.agents.base_agent:__init__:44 - prediction_agent initialized (enabled=True)
+2025-11-21 04:44:43 | INFO     | src.utils.feature_engineering:__init__:21 - FeatureEngineer initialized
+2025-11-21 04:44:43 | INFO     | src.utils.metrics:__init__:21 - MetricsCalculator initialized
+2025-11-21 04:44:43 | INFO     | src.agents.prediction_agent:__init__:40 - PredictionAgent initialized with 3 models
+2025-11-21 04:44:43 | INFO     | src.agents.base_agent:execute:129 - prediction_agent execution started
+2025-11-21 04:44:43 | INFO     | src.agents.prediction_agent:train_models:110 - Training models on 28023 samples...
+2025-11-21 04:44:43 | INFO     | src.agents.prediction_agent:_initialize_models:76 - Initializing models...
+2025-11-21 04:44:43 | INFO     | src.agents.prediction_agent:_initialize_models:106 - ✓ All models initialized
+2025-11-21 04:44:43 | INFO     | src.agents.prediction_agent:train_models:117 - Training Random Forest...
+2025-11-21 04:44:44 | INFO     | src.agents.prediction_agent:train_models:121 - Training XGBoost...
+2025-11-21 04:44:44 | ERROR    | src.agents.base_agent:execute:169 - prediction_agent execution failed: Invalid classes inferred from unique values of `y`.  Expected: [0 1 2], got ['High' 'Low' 'Medium']
+2025-11-21 04:44:53 | INFO     | src.utils.logger:setup_logger:54 - Logger initialized with level INFO
+2025-11-21 04:44:53 | INFO     | src.utils.data_loader:__init__:30 - DataLoader initialized with path: data/raw/online_gaming_behavior_dataset.csv
+2025-11-21 04:44:53 | INFO     | src.utils.data_loader:load_data:46 - Loading data from data/raw/online_gaming_behavior_dataset.csv
+2025-11-21 04:44:53 | INFO     | src.utils.data_loader:load_data:49 - Data loaded successfully. Shape: (40034, 13)
+2025-11-21 04:44:53 | INFO     | src.utils.data_loader:load_data:50 - Columns: ['PlayerID', 'Age', 'Gender', 'Location', 'GameGenre', 'PlayTimeHours', 'InGamePurchases', 'GameDifficulty', 'SessionsPerWeek', 'AvgSessionDurationMinutes', 'PlayerLevel', 'AchievementsUnlocked', 'EngagementLevel']
+2025-11-21 04:44:53 | INFO     | src.utils.data_loader:load_data:51 - Target distribution:
+EngagementLevel
+Medium    19374
+High      10336
+Low       10324
+Name: count, dtype: int64
+2025-11-21 04:44:53 | INFO     | src.utils.data_loader:split_data:130 - Data split complete:
+2025-11-21 04:44:53 | INFO     | src.utils.data_loader:split_data:131 -   Train: 28023 samples
+2025-11-21 04:44:53 | INFO     | src.utils.data_loader:split_data:132 -   Val: 4004 samples
+2025-11-21 04:44:53 | INFO     | src.utils.data_loader:split_data:133 -   Test: 8007 samples
+2025-11-21 04:44:53 | INFO     | src.utils.data_loader:split_data:134 -   Train target distribution: {'Medium': 13561, 'High': 7235, 'Low': 7227}
+2025-11-21 04:44:53 | INFO     | src.utils.data_loader:split_data:135 -   Val target distribution: {'Medium': 1938, 'High': 1034, 'Low': 1032}
+2025-11-21 04:44:53 | INFO     | src.utils.data_loader:split_data:136 -   Test target distribution: {'Medium': 3875, 'High': 2067, 'Low': 2065}
+2025-11-21 04:44:53 | INFO     | src.agents.base_agent:__init__:44 - prediction_agent initialized (enabled=True)
+2025-11-21 04:44:53 | INFO     | src.utils.feature_engineering:__init__:21 - FeatureEngineer initialized
+2025-11-21 04:44:53 | INFO     | src.utils.metrics:__init__:21 - MetricsCalculator initialized
+2025-11-21 04:44:53 | INFO     | src.agents.prediction_agent:__init__:40 - PredictionAgent initialized with 3 models
+2025-11-21 04:44:53 | INFO     | src.agents.base_agent:execute:129 - prediction_agent execution started
+2025-11-21 04:44:53 | INFO     | src.agents.prediction_agent:train_models:110 - Training models on 28023 samples...
+2025-11-21 04:44:53 | INFO     | src.agents.prediction_agent:_initialize_models:76 - Initializing models...
+2025-11-21 04:44:53 | INFO     | src.agents.prediction_agent:_initialize_models:106 - ✓ All models initialized
+2025-11-21 04:44:53 | INFO     | src.agents.prediction_agent:train_models:117 - Training Random Forest...
+2025-11-21 04:44:54 | INFO     | src.agents.prediction_agent:train_models:121 - Training XGBoost...
+2025-11-21 04:44:54 | ERROR    | src.agents.base_agent:execute:169 - prediction_agent execution failed: Invalid classes inferred from unique values of `y`.  Expected: [0 1 2], got ['High' 'Low' 'Medium']
+2025-11-21 04:49:41 | INFO     | src.utils.logger:setup_logger:54 - Logger initialized with level INFO
+2025-11-21 04:49:41 | INFO     | src.utils.data_loader:__init__:30 - DataLoader initialized with path: data/raw/online_gaming_behavior_dataset.csv
+2025-11-21 04:49:41 | INFO     | src.utils.data_loader:load_data:46 - Loading data from data/raw/online_gaming_behavior_dataset.csv
+2025-11-21 04:49:41 | INFO     | src.utils.data_loader:load_data:49 - Data loaded successfully. Shape: (40034, 13)
+2025-11-21 04:49:41 | INFO     | src.utils.data_loader:load_data:50 - Columns: ['PlayerID', 'Age', 'Gender', 'Location', 'GameGenre', 'PlayTimeHours', 'InGamePurchases', 'GameDifficulty', 'SessionsPerWeek', 'AvgSessionDurationMinutes', 'PlayerLevel', 'AchievementsUnlocked', 'EngagementLevel']
+2025-11-21 04:49:41 | INFO     | src.utils.data_loader:load_data:51 - Target distribution:
+EngagementLevel
+Medium    19374
+High      10336
+Low       10324
+Name: count, dtype: int64
+2025-11-21 04:49:41 | INFO     | src.utils.data_loader:split_data:130 - Data split complete:
+2025-11-21 04:49:41 | INFO     | src.utils.data_loader:split_data:131 -   Train: 28023 samples
+2025-11-21 04:49:41 | INFO     | src.utils.data_loader:split_data:132 -   Val: 4004 samples
+2025-11-21 04:49:41 | INFO     | src.utils.data_loader:split_data:133 -   Test: 8007 samples
+2025-11-21 04:49:41 | INFO     | src.utils.data_loader:split_data:134 -   Train target distribution: {'Medium': 13561, 'High': 7235, 'Low': 7227}
+2025-11-21 04:49:41 | INFO     | src.utils.data_loader:split_data:135 -   Val target distribution: {'Medium': 1938, 'High': 1034, 'Low': 1032}
+2025-11-21 04:49:41 | INFO     | src.utils.data_loader:split_data:136 -   Test target distribution: {'Medium': 3875, 'High': 2067, 'Low': 2065}
+2025-11-21 04:49:41 | INFO     | src.agents.base_agent:__init__:44 - prediction_agent initialized (enabled=True)
+2025-11-21 04:49:41 | INFO     | src.utils.feature_engineering:__init__:21 - FeatureEngineer initialized
+2025-11-21 04:49:41 | INFO     | src.utils.metrics:__init__:21 - MetricsCalculator initialized
+2025-11-21 04:49:41 | INFO     | src.agents.prediction_agent:__init__:40 - PredictionAgent initialized with 3 models
+2025-11-21 04:49:41 | INFO     | src.agents.base_agent:execute:129 - prediction_agent execution started
+2025-11-21 04:49:41 | INFO     | src.agents.prediction_agent:train_models:110 - Training models on 28023 samples...
+2025-11-21 04:49:41 | INFO     | src.agents.prediction_agent:_initialize_models:76 - Initializing models...
+2025-11-21 04:49:41 | INFO     | src.agents.prediction_agent:_initialize_models:106 - ✓ All models initialized
+2025-11-21 04:49:41 | INFO     | src.agents.prediction_agent:train_models:117 - Training Random Forest...
+2025-11-21 04:49:41 | INFO     | src.agents.prediction_agent:train_models:121 - Training XGBoost...
+2025-11-21 04:49:43 | INFO     | src.agents.prediction_agent:train_models:125 - Training Neural Network...
+2025-11-21 04:50:04 | INFO     | src.agents.prediction_agent:train_models:128 - ✓ All models trained successfully
+2025-11-21 04:50:04 | INFO     | src.utils.metrics:calculate_classification_metrics:73 - Classification metrics calculated: {'accuracy': 0.9709524319309139, 'precision': 0.9707031812513124, 'recall': 0.9666744006153589, 'f1_score': 0.9686431109205463, 'roc_auc': 0.9991310104283994, 'precision_class_0': 0.9629318785844174, 'recall_class_0': 0.9514858327574292, 'f1_class_0': 0.957174638487208, 'precision_class_1': 0.9773876404494382, 'recall_class_1': 0.9629168396291684, 'f1_class_1': 0.9700982783857253, 'precision_class_2': 0.9717900247200815, 'recall_class_2': 0.9856205294594794, 'f1_class_2': 0.9786564158887059}
+2025-11-21 04:50:04 | INFO     | src.agents.base_agent:execute:158 - prediction_agent execution completed successfully in 23.62s
+2025-11-21 04:50:04 | INFO     | src.agents.base_agent:execute:129 - prediction_agent execution started
+2025-11-21 04:50:04 | INFO     | src.agents.base_agent:execute:158 - prediction_agent execution completed successfully in 0.07s
+2025-11-21 04:50:04 | INFO     | src.utils.metrics:__init__:21 - MetricsCalculator initialized
+2025-11-21 04:50:04 | INFO     | src.utils.metrics:calculate_classification_metrics:73 - Classification metrics calculated: {'accuracy': 0.9148351648351648, 'precision': 0.9153472175370156, 'recall': 0.905783976165328, 'f1_score': 0.9102975316792395, 'roc_auc': 0.9429662065462859, 'precision_class_0': 0.92, 'recall_class_0': 0.8897485493230174, 'f1_class_0': 0.904621435594887, 'precision_class_1': 0.9127382146439318, 'recall_class_1': 0.8817829457364341, 'f1_class_1': 0.8969935929029078, 'precision_class_2': 0.9133034379671151, 'recall_class_2': 0.9458204334365325, 'f1_class_2': 0.929277566539924}
