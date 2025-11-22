@@ -6,10 +6,14 @@ from .base_agent import BaseAgent
 from .data_agent import DataAgent
 from .prediction_agent import PredictionAgent
 from .prescriptive_agent import PrescriptiveAgent
+from .execution_agent import ExecutionAgent
+from .monitoring_agent import MonitoringAgent
 
 __all__ = [
     'BaseAgent',
     'DataAgent',
     'PredictionAgent',
-    'PrescriptiveAgent'
+    'PrescriptiveAgent',
+    'ExecutionAgent',
+    'MonitoringAgent'
 ]

@@ -1,269 +1,323 @@
 """
-LLM-Powered Orchestrator
-Coordinates all agents using LangChain and LLM reasoning
+Orchestrator - Connects all 5 agents into a complete pipeline
 """
 
-import os
+import numpy as np
 from typing import Dict, Any, List
-from dotenv import load_dotenv
-from langchain_groq import ChatGroq
-from langchain.prompts import ChatPromptTemplate
-from langchain.schema import HumanMessage, SystemMessage
-from loguru import logger
+import logging
+from datetime import datetime
 
-# Load environment variables
-load_dotenv()
+from src.agents import (
+    DataAgent,
+    PredictionAgent,
+    PrescriptiveAgent,
+    ExecutionAgent,
+    MonitoringAgent
+)
+from src.guardrails import GuardrailSystem
 
-class LLMOrchestrator:
+class AgenticOrchestrator:
     """
-    LangChain-based orchestrator that coordinates agents with LLM reasoning
+    Orchestrates the complete agentic AI pipeline
+    
+    Pipeline:
+    1. DataAgent: Ingest & preprocess
+    2. PredictionAgent: Ensemble ML prediction
+    3. Guardrails Layer 2: Validate prediction
+    4. PrescriptiveAgent: Recommend action
+    5. Guardrails Layer 3: Validate action
+    6. ExecutionAgent: Execute action
+    7. MonitoringAgent: Track performance & drift
     """
     
-    def __init__(self, agents: Dict[str, Any]):
-        """
-        Initialize orchestrator with agents
+    def __init__(self):
+        self.logger = logging.getLogger("AgenticOrchestrator")
         
-        Args:
-            agents: Dictionary of agent instances
-        """
-        self.agents = agents
+        # Initialize all agents
+        self.logger.info("Initializing 5-agent system...")
+        self.data_agent = DataAgent()
+        self.prediction_agent = PredictionAgent()
+        self.prescriptive_agent = PrescriptiveAgent()
+        self.execution_agent = ExecutionAgent()
+        self.monitoring_agent = MonitoringAgent()
         
-        # Initialize LLM
-        api_key = os.getenv('GROQ_API_KEY')
-        if not api_key:
-            logger.warning("GROQ_API_KEY not found. Using mock mode.")
-            self.llm = None
-        else:
-            self.llm = ChatGroq(
-                model="llama-3.2-90b-text-preview",
-                temperature=0.3,
-                api_key=api_key
-            )
+        # Initialize guardrails
+        self.guardrails = GuardrailSystem()
         
-        logger.info("LLMOrchestrator initialized with LangChain")
+        # Pipeline state
+        self.is_trained = False
+        self.baseline_set = False
+        self.pipeline_history = []
+        
+        self.logger.info("✅ AgenticOrchestrator initialized with 5 agents + guardrails")
     
-    def explain_prediction(
+    def train_pipeline(
         self,
-        player_data: Dict[str, Any],
-        prediction: str,
-        confidence: float,
-        model_agreement: float
-    ) -> str:
-        """
-        Use LLM to explain prediction in natural language
-        
-        Args:
-            player_data: Player features
-            prediction: Predicted engagement level
-            confidence: Prediction confidence
-            model_agreement: Model agreement rate
-        
-        Returns:
-            Natural language explanation
-        """
-        if self.llm is None:
-            return "LLM not available. Please set GROQ_API_KEY."
-        
-        prompt = f"""You are an AI analyst explaining gaming behavior predictions.
-
-Player Profile:
-- Age: {player_data.get('age', 'N/A')}
-- Playtime: {player_data.get('playtime_hours', 'N/A')} hours
-- Sessions/Week: {player_data.get('sessions_per_week', 'N/A')}
-- Player Level: {player_data.get('player_level', 'N/A')}
-- Has Purchases: {player_data.get('has_purchases', 'N/A')}
-
-Prediction Results:
-- Predicted Engagement: {prediction}
-- Confidence: {confidence:.1%}
-- Model Agreement: {model_agreement:.1%}
-
-Provide a clear, concise explanation (2-3 sentences) of:
-1. Why this prediction makes sense given the player's behavior
-2. Any concerns or risks with this prediction
-3. Your assessment of prediction reliability
-
-Be direct and professional."""
-
-        try:
-            messages = [
-                SystemMessage(content="You are an expert gaming analytics AI."),
-                HumanMessage(content=prompt)
-            ]
-            response = self.llm.invoke(messages)
-            return response.content
-        except Exception as e:
-            logger.error(f"LLM explanation failed: {e}")
-            return f"Prediction: {prediction} (Confidence: {confidence:.1%})"
-    
-    def recommend_action_with_reasoning(
-        self,
-        player_data: Dict[str, Any],
-        prediction: str,
-        available_actions: List[Dict[str, Any]]
+        X_train: np.ndarray,
+        y_train: np.ndarray
     ) -> Dict[str, Any]:
         """
-        Use LLM to recommend action with reasoning
+        Train the prediction models
         
         Args:
-            player_data: Player features
-            prediction: Predicted engagement level
-            available_actions: List of possible actions
+            X_train: Training features
+            y_train: Training labels
         
         Returns:
-            Recommended action with explanation
+            Training results
         """
-        if self.llm is None:
-            # Fallback to RL agent
+        self.logger.info("Training pipeline...")
+        
+        # Train Agent 2: Prediction
+        train_result = self.prediction_agent.execute({
+            'mode': 'train',
+            'X_train': X_train,
+            'y_train': y_train
+        })
+        
+        # Set baseline for Agent 5: Monitoring
+        self.monitoring_agent.execute({
+            'mode': 'set_baseline',
+            'X': X_train,
+            'y': y_train
+        })
+        
+        self.is_trained = True
+        self.baseline_set = True
+        
+        self.logger.info("✅ Pipeline trained successfully")
+        
+        return {
+            'training_metrics': train_result['data']['metrics'],
+            'model_agreement': train_result['data']['model_agreement']
+        }
+    
+    def process_player(
+        self,
+        player_features: np.ndarray,
+        player_data: Dict[str, Any],
+        execute_action: bool = True
+    ) -> Dict[str, Any]:
+        """
+        Complete pipeline for a single player
+        
+        Args:
+            player_features: Scaled feature vector
+            player_data: Raw player data dict
+            execute_action: Whether to actually execute recommended action
+        
+        Returns:
+            Complete pipeline result
+        """
+        if not self.is_trained:
+            raise ValueError("Pipeline not trained. Call train_pipeline() first.")
+        
+        timestamp = datetime.now().isoformat()
+        pipeline_id = len(self.pipeline_history)
+        
+        self.logger.info(f"Processing player {pipeline_id}...")
+        
+        # ===== LAYER 1: INPUT VALIDATION =====
+        input_valid, input_issues = self.guardrails.layer_1_input_validation(player_data)
+        
+        if not input_valid:
+            self.logger.warning(f"❌ Input validation failed: {input_issues}")
             return {
-                'action': available_actions[2],  # Default to notification
-                'reasoning': 'LLM not available, using default action.'
+                'pipeline_id': pipeline_id,
+                'timestamp': timestamp,
+                'status': 'BLOCKED_INPUT',
+                'input_issues': input_issues
             }
         
-        actions_text = "\n".join([
-            f"{i}. {a['name']} (Cost: ${a['cost']}) - {a['description']}"
-            for i, a in enumerate(available_actions)
+        # ===== AGENT 2: PREDICTION =====
+        pred_result = self.prediction_agent.execute({
+            'mode': 'predict',
+            'X': player_features.reshape(1, -1)
+        })
+        
+        prediction = pred_result['data']['predictions'][0]
+        confidence = pred_result['data']['confidence'][0]
+        probabilities = pred_result['data']['probabilities'][0]
+        model_agreement = pred_result['data']['model_agreement']
+        hallucination = pred_result['data']['hallucination_mask'][0]
+        
+        # ===== LAYER 2: PREDICTION VALIDATION =====
+        pred_valid, risk_level, pred_concerns = self.guardrails.layer_2_prediction_validation(
+            prediction, confidence, model_agreement, probabilities
+        )
+        
+        if not pred_valid:
+            self.logger.warning(f"❌ Prediction validation failed: {pred_concerns}")
+            return {
+                'pipeline_id': pipeline_id,
+                'timestamp': timestamp,
+                'status': 'BLOCKED_PREDICTION',
+                'prediction': prediction,
+                'confidence': confidence,
+                'risk_level': risk_level,
+                'concerns': pred_concerns
+            }
+        
+        # ===== AGENT 3: PRESCRIPTIVE ACTION =====
+        # Create context for RL agent
+        context = np.array([
+            player_data.get('age', 0) / 100.0,
+            player_data.get('playtime_hours', 0) / 100.0,
+            player_data.get('sessions_per_week', 0) / 20.0,
+            player_data.get('player_level', 0) / 100.0,
+            float(player_data.get('has_purchases', False)),
+            confidence
         ])
         
-        prompt = f"""You are an AI strategist recommending player retention actions.
-
-Player Profile:
-- Predicted Engagement: {prediction}
-- Age: {player_data.get('age', 'N/A')}
-- Playtime: {player_data.get('playtime_hours', 'N/A')} hours
-- Sessions/Week: {player_data.get('sessions_per_week', 'N/A')}
-- Player Level: {player_data.get('player_level', 'N/A')}
-- Has Purchases: {player_data.get('has_purchases', 'N/A')}
-
-Available Actions:
-{actions_text}
-
-Which action would be most effective and why? Consider:
-1. Player's current engagement level
-2. Cost-effectiveness
-3. Likelihood of success
-
-Respond in this format:
-RECOMMENDED ACTION: [action name]
-REASONING: [2-3 sentences explaining why]"""
-
-        try:
-            messages = [
-                SystemMessage(content="You are an expert in player retention strategies."),
-                HumanMessage(content=prompt)
-            ]
-            response = self.llm.invoke(messages)
-            content = response.content
-            
-            # Parse response
-            lines = content.split('\n')
-            action_line = [l for l in lines if 'RECOMMENDED ACTION:' in l]
-            reasoning_lines = [l for l in lines if 'REASONING:' in l]
-            
-            if action_line and reasoning_lines:
-                recommended_name = action_line[0].split('RECOMMENDED ACTION:')[1].strip()
-                reasoning = reasoning_lines[0].split('REASONING:')[1].strip()
-                
-                # Find matching action
-                recommended_action = next(
-                    (a for a in available_actions if a['name'].lower() in recommended_name.lower()),
-                    available_actions[2]  # Default
-                )
-                
-                return {
-                    'action': recommended_action,
-                    'reasoning': reasoning,
-                    'llm_override': True
-                }
-            else:
-                # Fallback
-                return {
-                    'action': available_actions[2],
-                    'reasoning': content,
-                    'llm_override': False
-                }
-                
-        except Exception as e:
-            logger.error(f"LLM action recommendation failed: {e}")
-            return {
-                'action': available_actions[2],
-                'reasoning': f'LLM failed: {str(e)}',
-                'llm_override': False
-            }
+        presc_result = self.prescriptive_agent.execute({
+            'mode': 'recommend',
+            'context': context,
+            'prediction': prediction
+        })
+        
+        recommended_action = presc_result['data']['recommended_action']
+        
+        # ===== LAYER 3: ACTION VALIDATION =====
+        action_valid, action_concerns = self.guardrails.layer_3_action_validation(
+            recommended_action, prediction, confidence, player_data
+        )
+        
+        if not action_valid:
+            self.logger.warning(f"⚠️ Action validation concerns: {action_concerns}")
+        
+        # ===== FULL GUARDRAIL VALIDATION =====
+        full_validation = self.guardrails.validate_full_pipeline(
+            player_data,
+            prediction,
+            confidence,
+            model_agreement,
+            probabilities,
+            recommended_action
+        )
+        
+        # ===== AGENT 4: EXECUTION =====
+        execution_result = None
+        if execute_action and full_validation['approved']:
+            execution_result = self.execution_agent.execute({
+                'mode': 'execute',
+                'action': recommended_action,
+                'player_data': player_data,
+                'prediction': prediction,
+                'confidence': confidence
+            })
+            status = 'EXECUTED'
+        elif not full_validation['approved']:
+            status = 'BLOCKED_VALIDATION'
+        else:
+            status = 'SIMULATED'
+        
+        # Compile full result
+        pipeline_result = {
+            'pipeline_id': pipeline_id,
+            'timestamp': timestamp,
+            'status': status,
+            'player_data': player_data,
+            'prediction': {
+                'label': prediction,
+                'confidence': confidence,
+                'model_agreement': model_agreement,
+                'hallucination': hallucination,
+                'probabilities': probabilities.tolist()
+            },
+            'recommended_action': recommended_action,
+            'validation': full_validation,
+            'execution': execution_result['data'] if execution_result else None
+        }
+        
+        self.pipeline_history.append(pipeline_result)
+        
+        self.logger.info(
+            f"✅ Pipeline {pipeline_id} complete: {status} - "
+            f"{prediction} → {recommended_action['name']}"
+        )
+        
+        return pipeline_result
     
-    def validate_decision(
+    def monitor_system_health(
         self,
-        decision_context: Dict[str, Any]
+        X_val: np.ndarray,
+        y_val: np.ndarray,
+        X_baseline: np.ndarray
     ) -> Dict[str, Any]:
         """
-        Use LLM to validate a decision (Guardrail Layer)
-        
-        Args:
-            decision_context: Context about the decision
+        Check system health with Agent 5
         
         Returns:
-            Validation result with risk assessment
+            System health report
         """
-        if self.llm is None:
-            return {
-                'validated': True,
-                'risk_level': 'unknown',
-                'concerns': [],
-                'explanation': 'LLM validation not available'
-            }
+        self.logger.info("Checking system health...")
         
-        prompt = f"""You are an AI safety validator checking gaming analytics decisions.
-
-Decision Context:
-- Predicted Engagement: {decision_context.get('prediction', 'N/A')}
-- Confidence: {decision_context.get('confidence', 0):.1%}
-- Model Agreement: {decision_context.get('model_agreement', 0):.1%}
-- Recommended Action: {decision_context.get('action', 'N/A')}
-- Action Cost: ${decision_context.get('action_cost', 0)}
-
-Validate this decision by checking:
-1. Is the confidence high enough to act?
-2. Is model agreement sufficient?
-3. Is the action appropriate for the prediction?
-4. Are there any red flags or concerns?
-
-Respond in this format:
-VALIDATED: YES or NO
-RISK LEVEL: LOW, MEDIUM, or HIGH
-CONCERNS: [list any concerns, or "None"]
-EXPLANATION: [1-2 sentences]"""
-
-        try:
-            messages = [
-                SystemMessage(content="You are an expert AI safety validator."),
-                HumanMessage(content=prompt)
-            ]
-            response = self.llm.invoke(messages)
-            content = response.content
-            
-            # Parse response
-            validated = 'YES' in content.split('VALIDATED:')[1].split('\n')[0].upper() if 'VALIDATED:' in content else True
-            
-            risk_match = content.split('RISK LEVEL:')[1].split('\n')[0].strip() if 'RISK LEVEL:' in content else 'MEDIUM'
-            risk_level = risk_match.upper() if risk_match.upper() in ['LOW', 'MEDIUM', 'HIGH'] else 'MEDIUM'
-            
-            concerns_section = content.split('CONCERNS:')[1].split('EXPLANATION:')[0].strip() if 'CONCERNS:' in content else 'None'
-            concerns = [concerns_section] if concerns_section.lower() != 'none' else []
-            
-            explanation = content.split('EXPLANATION:')[1].strip() if 'EXPLANATION:' in content else content
-            
-            return {
-                'validated': validated,
-                'risk_level': risk_level,
-                'concerns': concerns,
-                'explanation': explanation
-            }
-            
-        except Exception as e:
-            logger.error(f"LLM validation failed: {e}")
-            return {
-                'validated': True,
-                'risk_level': 'MEDIUM',
-                'concerns': [f'Validation error: {str(e)}'],
-                'explanation': 'Validation could not be completed'
-            }
+        # Check drift
+        drift_result = self.monitoring_agent.execute({
+            'mode': 'check_drift',
+            'X': X_val,
+            'X_baseline': X_baseline
+        })
+        
+        # Monitor performance
+        pred_result = self.prediction_agent.execute({
+            'mode': 'predict',
+            'X': X_val
+        })
+        
+        perf_result = self.monitoring_agent.execute({
+            'mode': 'monitor_performance',
+            'y_true': y_val,
+            'y_pred': pred_result['data']['predictions'],
+            'confidence': pred_result['data']['confidence']
+        })
+        
+        # Get alerts
+        alerts_result = self.monitoring_agent.execute({
+            'mode': 'get_alerts'
+        })
+        
+        health_report = {
+            'drift': drift_result['data'],
+            'performance': perf_result['data'],
+            'alerts': alerts_result['data']['alerts'],
+            'recommend_retrain': perf_result['data']['recommend_retrain']
+        }
+        
+        self.logger.info("✅ System health check complete")
+        
+        return health_report
+    
+    def get_pipeline_stats(self) -> Dict[str, Any]:
+        """Get overall pipeline statistics"""
+        if not self.pipeline_history:
+            return {'message': 'No pipeline runs yet'}
+        
+        total = len(self.pipeline_history)
+        statuses = [p['status'] for p in self.pipeline_history]
+        
+        # Execution stats
+        exec_results = [p['execution'] for p in self.pipeline_history if p['execution']]
+        total_cost = sum(e['total_cost'] for e in exec_results) if exec_results else 0
+        total_revenue = sum(e['total_revenue'] for e in exec_results) if exec_results else 0
+        
+        # Guardrail stats
+        guardrail_stats = self.guardrails.get_validation_stats()
+        
+        return {
+            'total_runs': total,
+            'status_distribution': {
+                'EXECUTED': statuses.count('EXECUTED'),
+                'BLOCKED_INPUT': statuses.count('BLOCKED_INPUT'),
+                'BLOCKED_PREDICTION': statuses.count('BLOCKED_PREDICTION'),
+                'BLOCKED_VALIDATION': statuses.count('BLOCKED_VALIDATION'),
+                'SIMULATED': statuses.count('SIMULATED')
+            },
+            'execution_stats': {
+                'total_cost': total_cost,
+                'total_revenue': total_revenue,
+                'net_benefit': total_revenue - total_cost,
+                'roi': ((total_revenue - total_cost) / total_cost * 100) if total_cost > 0 else 0
+            },
+            'guardrail_stats': guardrail_stats
+        }
