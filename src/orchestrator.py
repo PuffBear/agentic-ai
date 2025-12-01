@@ -159,20 +159,10 @@ class AgenticOrchestrator:
             }
         
         # ===== AGENT 3: PRESCRIPTIVE ACTION =====
-        # Create context for RL agent
-        context = np.array([
-            player_data.get('age', 0) / 100.0,
-            player_data.get('playtime_hours', 0) / 100.0,
-            player_data.get('sessions_per_week', 0) / 20.0,
-            player_data.get('player_level', 0) / 100.0,
-            float(player_data.get('has_purchases', False)),
-            confidence
-        ])
-        
+        # Pass player_data directly - prescriptive agent will extract what it needs
         presc_result = self.prescriptive_agent.execute({
             'mode': 'recommend',
-            'context': context,
-            'prediction': prediction
+            'player_data': player_data  # Pass full dict with correct field names
         })
         
         recommended_action = presc_result['data']['recommended_action']

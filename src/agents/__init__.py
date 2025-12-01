@@ -8,6 +8,7 @@ from .prediction_agent import PredictionAgent
 from .prescriptive_agent import PrescriptiveAgent
 from .execution_agent import ExecutionAgent
 from .monitoring_agent import MonitoringAgent
+from .communication_agent import CommunicationIntelligenceAgent
 
 __all__ = [
     'BaseAgent',
@@ -15,5 +16,7 @@ __all__ = [
     'PredictionAgent',
     'PrescriptiveAgent',
     'ExecutionAgent',
-    'MonitoringAgent'
+    'MonitoringAgent',
+    'CommunicationIntelligenceAgent'
 ]
+

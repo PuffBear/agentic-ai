@@ -52,6 +52,10 @@ class DataLoader:
         
         return self.df
     
+    def load_gaming_dataset(self) -> pd.DataFrame:
+        """Alias for load_data() for compatibility"""
+        return self.load_data()
+    
     def get_data_info(self) -> Dict:
         """
         Get comprehensive information about the dataset

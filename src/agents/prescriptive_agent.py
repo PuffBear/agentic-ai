@@ -65,13 +65,13 @@ class PrescriptiveAgent(BaseAgent):
         Returns:
             Context vector
         """
-        # Extract key features for context
+        # Extract key features for context (using actual dataset field names)
         context = np.array([
-            player_data.get('age', 30) / 100,  # Normalized age
-            player_data.get('playtime_hours', 50) / 1000,  # Normalized playtime
-            player_data.get('sessions_per_week', 5) / 30,  # Normalized sessions
-            player_data.get('player_level', 25) / 100,  # Normalized level
-            1 if player_data.get('has_purchases', False) else 0,  # Binary purchases
+            player_data.get('Age', 30) / 100,  # Normalized age
+            player_data.get('PlayTimeHours', 50) / 1000,  # Normalized playtime
+            player_data.get('SessionsPerWeek', 5) / 30,  # Normalized sessions
+            player_data.get('PlayerLevel', 25) / 100,  # Normalized level
+            1 if player_data.get('InGamePurchases', 0) == 1 else 0,  # Binary purchases
             player_data.get('predicted_engagement', 1) / 2  # Normalized prediction
         ])
         

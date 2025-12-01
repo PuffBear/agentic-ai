@@ -246,3 +246,95 @@ class FeatureEngineer:
     def get_feature_names(self) -> List[str]:
         """Get list of all feature names after transformation"""
         return self.feature_names
+    
+    def prepare_features(
+        self,
+        df: pd.DataFrame,
+        target_column: str = 'EngagementLevel',
+        fit: bool = True,
+        create_interactions: bool = True,
+        create_temporal: bool = True,
+        create_behavioral: bool = True
+    ) -> Tuple[pd.DataFrame, pd.Series]:
+        """
+        Complete feature preparation pipeline
+        
+        Args:
+            df: Input DataFrame with all features and target
+            target_column: Name of target column
+            fit: Whether to fit transformers (True for training, False for test)
+            create_interactions: Whether to create interaction features
+            create_temporal: Whether to create temporal features
+            create_behavioral: Whether to create behavioral scores
+        
+        Returns:
+            Tuple of (X, y) where X is features DataFrame and y is target Series
+        """
+        logger.info("Starting complete feature preparation pipeline")
+        
+        # Make a copy
+        df = df.copy()
+        
+        # Separate target if it exists
+        if target_column in df.columns:
+            y = df[target_column].copy()
+            df = df.drop(target_column, axis=1)
+            
+            # Encode target if it's categorical
+            if y.dtype == 'object':
+                if fit:
+                    self.target_encoder = LabelEncoder()
+                    y_encoded = self.target_encoder.fit_transform(y)
+                    logger.info(f"Target encoded: {dict(zip(self.target_encoder.classes_, range(len(self.target_encoder.classes_))))}")
+                else:
+                    y_encoded = self.target_encoder.transform(y)
+                y = pd.Series(y_encoded, index=y.index, name=y.name)
+        else:
+            y = None
+        
+        # Drop ID column if present
+        if 'PlayerID' in df.columns:
+            df = df.drop('PlayerID', axis=1)
+        
+        # Engineer features
+        df = self.engineer_features(
+            df,
+            create_interactions=create_interactions,
+            create_temporal=create_temporal,
+            create_behavioral=create_behavioral
+        )
+        
+        # Identify categorical and numerical features
+        categorical_features = df.select_dtypes(include=['object']).columns.tolist()
+        
+        # Encode categorical features
+        if categorical_features:
+            logger.info(f"Encoding categorical features: {categorical_features}")
+            df = self.encode_categorical(
+                df,
+                categorical_features=categorical_features,
+                method='label',  # Use label encoding for simplicity
+                fit=fit
+            )
+        
+        # Get numerical features (after encoding)
+        numerical_features = df.select_dtypes(include=[np.number]).columns.tolist()
+        
+        # Scale numerical features
+        if numerical_features:
+            logger.info(f"Scaling {len(numerical_features)} numerical features")
+            df = self.scale_features(
+                df,
+                numerical_features=numerical_features,
+                method='standard',
+                fit=fit
+            )
+        
+        # Store feature names
+        self.feature_names = df.columns.tolist()
+        
+        logger.info(f"Feature preparation complete. X shape: {df.shape}")
+        if y is not None:
+            logger.info(f"Target distribution: {y.value_counts().to_dict()}")
+        
+        return df, y
