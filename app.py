@@ -20,7 +20,6 @@ from src.utils.data_loader import DataLoader
 from src.utils.feature_engineering import FeatureEngineer
 from sklearn.model_selection import train_test_split
 from src.llm_interface import OllamaLLM, generate_llm_response
-from communication_tab import render_communication_tab
 
 # Page config
 st.set_page_config(
@@ -171,14 +170,13 @@ def main():
         st.caption("🔸 Real-time Monitoring")
     
     # Main content tabs
-    tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
         "📊 Dashboard", 
         "🤖 AI Chat",
         "🔬 EDA",
         "💡 Strategy", 
         "🛡️ Guardrails",
-        "📈 Monitoring",
-        "💬 Communication"
+        "📈 Monitoring"
     ])
     
     # Tab 1: Dashboard
@@ -713,9 +711,7 @@ For now, try the Quick Insights buttons below! 👇"""
         else:
             st.info("Train models to see monitoring data")
     
-    # Tab 7: Communication Intelligence
-    with tab7:
-        render_communication_tab()
+
 
 
 # Helper functions for Quick Insights
